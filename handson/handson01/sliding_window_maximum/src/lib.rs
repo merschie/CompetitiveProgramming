@@ -21,11 +21,42 @@ pub fn brute_force_idiomatic(v: &Vec<i32>, k: i32) -> Vec<i32> {
 }
 
 pub fn heap(nums: &Vec<i32>, k: i32) -> Vec<i32> {
-    todo!();
+    let k = k as usize;
+    let n = nums.len();
+    println!("k: {k}, n: {n}");
+    let mut heap: BinaryHeap<(i32, usize)> = BinaryHeap::new();
+    let mut maximums = Vec::with_capacity(n - k + 1);
+
+    for i in 0..n {
+        heap.push((nums[i], i));
+        if i >= k - 1 {
+            while heap.peek().unwrap().1 + k <= i {
+                heap.pop();
+            }
+            maximums.push(heap.peek().unwrap().0);
+        }
+    }
+    maximums
 }
 
 pub fn bst(nums: &Vec<i32>, k: i32) -> Vec<i32> {
-    todo!();
+    let k = k as usize;
+    let n = nums.len();
+    println!("k: {k}, n: {n}");
+    let mut tree: BinarySearchTree<(i32, usize)> = BinarySearchTree::new();
+    let mut maximums = Vec::with_capacity(n - k + 1);
+
+    for i in 0..n {
+        tree.insert((nums[i], i));
+
+        if i >= k - 1 {
+            while tree.max().unwrap().1 + k <= i {
+                tree.extract_max().unwrap().1;
+            }
+            maximums.push(tree.max().unwrap().0);
+        }
+    }
+    maximums
 }
 
 pub fn linear(nums: &Vec<i32>, k: i32) -> Vec<i32> {

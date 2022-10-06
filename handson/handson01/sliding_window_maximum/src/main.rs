@@ -27,7 +27,7 @@ fn main() {
                 continue;
             }
             let nums = gen_random_vector(n);
-
+            println!("k:{k} n:{n}");
             // Brute force
             let (elapsed_times, _) = measure_elapsed_time(brute_force, &nums, k);
             let min_elapsed = *elapsed_times.iter().min().unwrap();
