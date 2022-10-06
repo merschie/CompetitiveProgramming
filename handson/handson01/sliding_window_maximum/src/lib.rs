@@ -29,7 +29,23 @@ pub fn bst(nums: &Vec<i32>, k: i32) -> Vec<i32> {
 }
 
 pub fn linear(nums: &Vec<i32>, k: i32) -> Vec<i32> {
-    todo!();
+    let k = k as usize;
+    let n = nums.len();
+    let mut maximums = Vec::with_capacity(n - k + 1);
+    let mut deq: VecDeque<usize> = VecDeque::new();
+    for i in 0..n {
+        while !deq.is_empty() && deq[0] + k <= i {
+            deq.pop_front();
+        }
+        while !deq.is_empty() && nums[i] >= nums[*deq.back().unwrap()] {
+            deq.pop_back();
+        }
+        deq.push_back(i);
+        if i >= k - 1 {
+            maximums.push(nums[deq[0]]);
+        }
+    }
+    maximums
 }
 
 pub fn gen_random_vector(n: usize) -> Vec<i32> {
@@ -57,7 +73,6 @@ mod tests {
         assert_eq!(results, truth);
     }
 
-    #[ignore]
     #[test]
     fn test_heap_version() {
         let k = 3;
@@ -69,7 +84,6 @@ mod tests {
         assert_eq!(results, truth);
     }
 
-    #[ignore]
     #[test]
     fn test_bst_version() {
         let k = 3;
@@ -81,7 +95,6 @@ mod tests {
         assert_eq!(results, truth);
     }
 
-    #[ignore]
     #[test]
     fn test_linear_version() {
         let k = 3;
