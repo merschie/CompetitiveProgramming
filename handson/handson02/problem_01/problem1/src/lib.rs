@@ -1,5 +1,5 @@
 use std::cmp;
-
+#[derive(Clone)]
 pub struct SegTree {
     pub value: i32,
     pub left: Option<Box<SegTree>>,
@@ -23,7 +23,7 @@ where
     }
 
     pub fn create(&mut self, arr: Vec<i32>) -> Self {
-        println!("Create Segmentation Tree with array: {:?}", arr);
+        //println!("Create Segmentation Tree with array: {:?}", arr);
         kleiner(arr, 0)
     }
 
@@ -47,29 +47,87 @@ where
             self.right.as_ref().unwrap().preorder();
         }
     }
-    pub fn update(mut self, i: usize, j: usize, t: i32) {
-        println!("i:{} j:{}", i, j);
-        println!("tl:{} tr:{}", self.tl, self.tr);
-        if self.tl == self.tr {
-            println!("Updating");
-            self.value = cmp::min(t, self.value)
+    pub fn update(mut self, i: usize, j: usize, t: i32) -> Self {
+        //println!("Update, i={}, j={} ,T={},", i, j, t);
+        let mid = ((self.tr - self.tl) / 2) + self.tl;
+        //println!("Schaue bei i:{} j:{} mit Mitte:{}", i, j, mid);
+
+        //bei einem Element angekommen
+        if self.tr == self.tl {
+            //println!("nur noch ein Element");
+            self.value = cmp::min(t, self.value);
+            return self;
         }
 
-        let mid = if let 0 = j - i % 2 {
-            (j - i / 2) + i
-        } else {
-            (j - i / 2) + 1 + i
-        };
-
-        //left
-
-        if mid < self.tr {
-            self.left.unwrap().update(i, j, t);
-        } else if mid > self.tl {
-            self.right.unwrap().update(i, j, t);
+        //muss getrennt werden
+        if i <= mid && mid < j {
+            //println!("muss trennen");
+            let left = self.left.clone().unwrap();
+            let right = self.right.clone().unwrap();
+            return self
+                .left(left.update(i, mid, t))
+                .right(right.update(mid, j, t));
         }
 
-        //right
+        //passt ganz links rein
+
+        if j <= mid {
+            //println!("found left");
+            self.value = cmp::max(t, self.right.as_ref().unwrap().value);
+            let left = self.left.clone().unwrap();
+            return self.left(left.update(i, j, t));
+        }
+
+        //passt ganz rechts rein
+        if i > mid {
+            //println!("found right");
+            self.value = cmp::max(t, self.left.as_ref().unwrap().value);
+            let right = self.right.clone().unwrap();
+            return self.right(right.update(i, j, t));
+        }
+
+        //println!("Hier läuft was falsch!!!");
+
+        self
+    }
+
+    pub fn max(&self, i: usize, j: usize) -> i32 {
+        let mid = ((self.tr - self.tl) / 2) + self.tl;
+        //println!("Schaue bei i:{} j:{} mit Mitte:{}", i, j, mid);
+        //bei einem Element angekommen
+        if self.tr == self.tl {
+            //println!("nur noch ein Element");
+            let x = self.value;
+            return x;
+        }
+
+        //muss getrennt werden
+        if i <= mid && mid < j {
+            //println!("muss trennen");
+            let left = self.left.as_ref().unwrap().max(i, mid);
+            let right = self.right.as_ref().unwrap().max(mid + 1, j);
+
+            if left < right {
+                return right;
+            }
+            return left;
+        }
+
+        //passt ganz links rein
+
+        if j <= mid {
+            //println!("found left");
+            return self.left.as_ref().unwrap().max(i, j);
+        }
+
+        //passt ganz rechts rein
+        if i >= mid {
+            //println!("found right");
+            return self.right.as_ref().unwrap().max(i, j);
+        }
+
+        println!("Hier läuft was falsch!!!");
+        return 0;
     }
 }
 
@@ -80,17 +138,17 @@ pub fn kleiner(arr: Vec<i32>, offset: usize) -> SegTree {
     }
 
     if arr.len() == 3 {
-        let x = SegTree::new(arr[0] + arr[1] + arr[2], offset, offset + 2)
-            .right(SegTree::new(arr[2], offset + 2, offset + 2))
-            .left(create_leave(arr[0], arr[1], offset));
+        let x = SegTree::new(
+            cmp::max(cmp::max(arr[0], arr[1]), arr[2]),
+            offset,
+            offset + 2,
+        )
+        .right(SegTree::new(arr[2], offset + 2, offset + 2))
+        .left(create_leave(arr[0], arr[1], offset));
         return x;
     }
 
-    let mid = if let 0 = arr.len() % 2 {
-        arr.len() / 2
-    } else {
-        (arr.len() / 2) + 1
-    };
+    let mid = find_mid(0, arr.len());
 
     let start = Vec::from_iter(arr[..mid].iter().cloned());
     let end = Vec::from_iter(arr[mid..].iter().cloned());
@@ -98,7 +156,7 @@ pub fn kleiner(arr: Vec<i32>, offset: usize) -> SegTree {
     let left = kleiner(start, offset);
     let right = kleiner(end, offset + mid);
 
-    let root = left.value + right.value;
+    let root = cmp::max(left.value, right.value);
     let lt = left.tl;
     let rt = right.tr;
 
@@ -106,8 +164,17 @@ pub fn kleiner(arr: Vec<i32>, offset: usize) -> SegTree {
 }
 
 pub fn create_leave(left: i32, right: i32, offset: usize) -> SegTree {
-    let x = SegTree::new(left + right, offset, offset + 1)
+    let x = SegTree::new(cmp::max(left, right), offset, offset + 1)
         .left(SegTree::new(left, offset, offset))
         .right(SegTree::new(right, offset + 1, offset + 1));
     return x;
+}
+
+pub fn find_mid(a: usize, b: usize) -> usize {
+    let mid = if let 0 = (b - a) % 2 {
+        ((b - a) / 2) + a
+    } else {
+        ((b - a) / 2) + 1 + a
+    };
+    return mid;
 }
