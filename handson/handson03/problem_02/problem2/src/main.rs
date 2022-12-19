@@ -17,11 +17,15 @@ fn main() {
 
 fn patriotic_selections(n: usize, colors: &[char]) -> usize {
     //create vector for elements type usize
-    let mut xcounter = 0;
     let mut whites = Vec::new();
+    //number of patriotic selections
     let mut selections = 0;
+    //number of Xs so far
+    let mut xcounter = 0;
+    //iterate through the colors
     for i in 0..n {
         if colors[i] == 'R' {
+            //create new object in vector
             whites.push((i, 0, 0, xcounter));
         }
         if colors[i] == 'W' {
@@ -38,7 +42,6 @@ fn patriotic_selections(n: usize, colors: &[char]) -> usize {
                     selections +=
                         3_usize.pow(whites[x].2 as u32 - 1 + whites[x].3 as u32) * whites[x].2;
                 }
-                //whites[x].3 += 1;
             }
         }
         if colors[i] == 'X' {
@@ -58,13 +61,11 @@ fn patriotic_selections(n: usize, colors: &[char]) -> usize {
                     selections += 3_usize.pow(whites[x].2 as u32 - 2 + whites[x].3 as u32)
                         * (whites[x].2 - 1);
                 }
-                //add x to data
             }
             whites.push((i, 0, 0, xcounter));
             xcounter += 1;
         }
     }
-
     selections
 }
 
