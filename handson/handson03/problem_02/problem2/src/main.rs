@@ -17,76 +17,63 @@ fn main() {
 }
 
 fn patriotic_selections(n: usize, colors: &[char]) -> usize {
-    //create vector of all possible combinations
+    //create vector for elements type usize
+    let mut xcounter = 0;
     let mut whites = Vec::new();
-
-
     let mut selections = 0;
-    let mut redfound = false;
-    let mut red = 0;
-    let mut red_multiplier = 0;
-    let mut white = 0;
-    let mut white_multiplier = 0;
-    let mut green = 0;
-    let mut x_multiplier = 0;
-    let mut x_replace_white = 0;
-    let mut finished = false;
-
     for i in 0..n {
+        println!("\x1b[93mstep {}\x1b[0m", i);
         if colors[i] == 'R' {
             println!("Found red");
-            red = i;
-            redfound = true;
-            red_multiplier += 1;
+            whites.push((i, 0, 0, xcounter));
         }
-        if colors[i] == 'W' && redfound {
+        if colors[i] == 'W' {
             println!("Found white");
-            white = i;
-            white_multiplier += 1;
-            x_multiplier += x_replace_white;
-        }
-        if colors[i] == 'G' && white > 0 {
-            green = i;
-            println!("Found green");
-            selections += red_multiplier * white_multiplier;
-            if x_multiplier > 0 {
-                selections += 3_usize.pow(x_multiplier as u32);
+            for x in 0..whites.len() {
+                whites[x].1 += 1;
             }
-            finished = true;
+        }
+        if colors[i] == 'G' {
+            println!("Found green");
+            for x in 0..whites.len() {
+                println!(
+                    "added {}",
+                    3_usize.pow(whites[x].2 as u32 + whites[x].3 as u32) * whites[x].1
+                );
+                //println!("exponent: {} for x: {}", whites[x].2 + whites[x].3, x);
+                selections += 3_usize.pow(whites[x].2 as u32 + whites[x].3 as u32) * whites[x].1;
+                //whites[x].3 += 1;
+            }
         }
         if colors[i] == 'X' {
             println!("Found X");
-            if white > 0 {
-                selections += red_multiplier * white_multiplier;
-                println!(
-                    "red_multiplier: {}, white_multiplier: {}",
-                    red_multiplier, white_multiplier
-                );
-
-                if finished {
-                    x_multiplier += 1;
-                    selections += 3_usize.pow(x_multiplier as u32);
-                    println!("mulllllti");
-                } else {
-                    white_multiplier += 1;
-                    red_multiplier += 1;
-                    finished = true;
+            //multiply all selections till now by 3
+            println!("added {}", selections * 2);
+            selections = selections * 3;
+            for x in 0..whites.len() {
+                //added for X=G
+                selections += 3_usize.pow(whites[x].2 as u32) * whites[x].1;
+                //use previous x as w
+                whites[x].2 += 1;
+                if whites[x].1 > 0 && whites[x].2 == 0 {
+                    //use x as G and there is a w
+                    println!("use x as G and there is a w");
+                    selections +=
+                        3_usize.pow(whites[x].2 as u32 - 1 + whites[x].3 as u32) * whites[x].1;
+                } else if whites[x].2 >= 2 {
+                    //use x as G and as w
+                    println!("use x as G and as w");
+                    selections += 3_usize.pow(whites[x].2 as u32 - 2 + whites[x].3 as u32)
+                        * (whites[x].2 - 1);
                 }
-            } else if redfound && white_multiplier == 0 {
-                white = i;
-                white_multiplier += 1;
-                x_replace_white += 1;
-                println!("x_replace_white: {}", x_replace_white);
-            } else if !redfound {
-                red = i;
-                redfound = true;
-                red_multiplier += 1;
+                println!("whites[2]: {}", whites[x].2);
+                //add x to data
             }
-
-            //x_multiplier += 1;
+            whites.push((i, 0, 0, xcounter));
+            xcounter += 1;
         }
+        println!("{:?}", whites);
     }
-    println!("red: {}, white: {}, green: {}", red, white, green);
 
     selections
 }
