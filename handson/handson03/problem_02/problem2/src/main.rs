@@ -12,7 +12,6 @@ fn main() {
     let h: Vec<char> = input.trim().chars().collect();
 
     // Call the function and print the result
-    println!("{:?}", h);
     println!("{}", patriotic_selections(n, &h));
 }
 
@@ -22,33 +21,28 @@ fn patriotic_selections(n: usize, colors: &[char]) -> usize {
     let mut whites = Vec::new();
     let mut selections = 0;
     for i in 0..n {
-        println!("\x1b[93mstep {}\x1b[0m", i);
         if colors[i] == 'R' {
-            println!("Found red");
             whites.push((i, 0, 0, xcounter));
         }
         if colors[i] == 'W' {
-            println!("Found white");
             for x in 0..whites.len() {
                 whites[x].1 += 1;
             }
         }
         if colors[i] == 'G' {
-            println!("Found green");
             for x in 0..whites.len() {
-                println!(
-                    "added {}",
-                    3_usize.pow(whites[x].2 as u32 + whites[x].3 as u32) * whites[x].1
-                );
-                //println!("exponent: {} for x: {}", whites[x].2 + whites[x].3, x);
+                //g as last x as start and w in middle
                 selections += 3_usize.pow(whites[x].2 as u32 + whites[x].3 as u32) * whites[x].1;
+                //use x as w
+                if whites[x].2 >= 1 {
+                    selections +=
+                        3_usize.pow(whites[x].2 as u32 - 1 + whites[x].3 as u32) * whites[x].2;
+                }
                 //whites[x].3 += 1;
             }
         }
         if colors[i] == 'X' {
-            println!("Found X");
             //multiply all selections till now by 3
-            println!("added {}", selections * 2);
             selections = selections * 3;
             for x in 0..whites.len() {
                 //added for X=G
@@ -57,22 +51,18 @@ fn patriotic_selections(n: usize, colors: &[char]) -> usize {
                 whites[x].2 += 1;
                 if whites[x].1 > 0 && whites[x].2 == 0 {
                     //use x as G and there is a w
-                    println!("use x as G and there is a w");
                     selections +=
                         3_usize.pow(whites[x].2 as u32 - 1 + whites[x].3 as u32) * whites[x].1;
                 } else if whites[x].2 >= 2 {
                     //use x as G and as w
-                    println!("use x as G and as w");
                     selections += 3_usize.pow(whites[x].2 as u32 - 2 + whites[x].3 as u32)
                         * (whites[x].2 - 1);
                 }
-                println!("whites[2]: {}", whites[x].2);
                 //add x to data
             }
             whites.push((i, 0, 0, xcounter));
             xcounter += 1;
         }
-        println!("{:?}", whites);
     }
 
     selections
