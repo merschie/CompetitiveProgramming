@@ -14,126 +14,119 @@ fn main() {
     // Call the function and print the result
     println!("{:?}", h);
     println!("{}", patriotic_selections(n, &h));
+}
 
-    fn patriotic_selections(n: usize, colors: &[char]) -> usize {
-        let mut selections = 0;
+fn patriotic_selections(n: usize, colors: &[char]) -> usize {
+    //create vector of all possible combinations
+    let mut whites = Vec::new();
 
-        //find first green house, last red house, first white house, last white house and first x house and last x house
-        let mut first_red = 0;
-        let mut last_green = 0;
-        let mut first_white = 0;
-        let mut last_white = 0;
-        for i in 0..n {
-            if colors[i] == 'R' {
-                first_red = i;
-                break;
-            }
-            if colors[i] == 'X' {
-                first_red = i;
-                break;
-            }
-        }
-        for i in (0..n).rev() {
-            if colors[i] == 'G' {
-                last_green = i;
-                break;
-            }
-            if colors[i] == 'X' {
-                last_green = i;
-                break;
-            }
-        }
-        for i in first_red..n {
-            if colors[i] == 'W' {
-                first_white = i;
-                break;
-            }
-        }
-        for i in (0..last_green).rev() {
-            if colors[i] == 'W' {
-                last_white = i;
-                break;
-            }
-        }
-        println!("first red: {}", first_red);
-        println!("last green: {}", last_green);
-        println!("first white: {}", first_white);
-        println!("last white: {}", last_white);
-        println!("------------------");
-        let mut xbetween = 0;
-        //count white houses and X houses between first red and last green
-        println!("look for white houses");
-        let mut xbetweenw = 0;
-        let mut selectionsw = 0;
-        for i in first_red..last_green {
-            println!("W i: {}", i);
-            if colors[i] == 'W' {
-                selectionsw += 1;
-            }
-            if colors[i] == 'X' {
-                xbetweenw += 1;
-            }
-            println!("count W xbetween: {}", xbetween);
-            println!("Found W: {}", selectionsw);
-        }
-        if selectionsw > 0 {
-            xbetween += xbetweenw;
-        } else if xbetweenw == 1 {
-            selections += 1;
-        }
-        selections += selectionsw;
 
-        //count green houses after first white
-        println!("look for green houses");
-        let mut xbetweeng = 0;
-        let mut selectionsg = 0;
-        for i in first_white..n {
-            println!("G i: {}", i);
-            if colors[i] == 'G' {
-                selectionsg += 1;
-            }
-            if colors[i] == 'X' {
-                xbetweeng += 1;
-            }
-            println!("count G xbetween: {}", xbetweeng);
-            println!("Found G: {}", selectionsg);
-        }
+    let mut selections = 0;
+    let mut redfound = false;
+    let mut red = 0;
+    let mut red_multiplier = 0;
+    let mut white = 0;
+    let mut white_multiplier = 0;
+    let mut green = 0;
+    let mut x_multiplier = 0;
+    let mut x_replace_white = 0;
+    let mut finished = false;
 
-        if selectionsg > 0 {
-            xbetween += xbetweeng;
-        } else if xbetweeng == 1 {
-            selections += 1;
+    for i in 0..n {
+        if colors[i] == 'R' {
+            println!("Found red");
+            red = i;
+            redfound = true;
+            red_multiplier += 1;
         }
-        selections += selectionsg;
-        println!("Found after G: {}", selections);
-
-        //count red houses before last white
-        println!("look for red houses");
-        let mut xbetweenr = 0;
-        let mut selectionsr = 0;
-        for i in 0..last_white {
-            println!("R i: {}", i);
-            if colors[i] == 'R' {
-                selectionsr += 1;
+        if colors[i] == 'W' && redfound {
+            println!("Found white");
+            white = i;
+            white_multiplier += 1;
+            x_multiplier += x_replace_white;
+        }
+        if colors[i] == 'G' && white > 0 {
+            green = i;
+            println!("Found green");
+            selections += red_multiplier * white_multiplier;
+            if x_multiplier > 0 {
+                selections += 3_usize.pow(x_multiplier as u32);
             }
-            if colors[i] == 'X' {
-                xbetweenr += 1;
-            }
-            println!("count R xbetween: {}", xbetweenr);
-            println!("Found R: {}", selectionsr);
+            finished = true;
         }
-        if selectionsr > 0 {
-            xbetween += xbetweenr;
-        } else if xbetweenr == 1 {
-            selections += 1;
-        }
-        selections += selectionsr;
+        if colors[i] == 'X' {
+            println!("Found X");
+            if white > 0 {
+                selections += red_multiplier * white_multiplier;
+                println!(
+                    "red_multiplier: {}, white_multiplier: {}",
+                    red_multiplier, white_multiplier
+                );
 
-        println!("Found after r: {}", selections);
-        if xbetween > 0 {
-            selections += 3_usize.pow(xbetween);
+                if finished {
+                    x_multiplier += 1;
+                    selections += 3_usize.pow(x_multiplier as u32);
+                    println!("mulllllti");
+                } else {
+                    white_multiplier += 1;
+                    red_multiplier += 1;
+                    finished = true;
+                }
+            } else if redfound && white_multiplier == 0 {
+                white = i;
+                white_multiplier += 1;
+                x_replace_white += 1;
+                println!("x_replace_white: {}", x_replace_white);
+            } else if !redfound {
+                red = i;
+                redfound = true;
+                red_multiplier += 1;
+            }
+
+            //x_multiplier += 1;
         }
-        println!("------------------");
-        selections
+    }
+    println!("red: {}, white: {}, green: {}", red, white, green);
+
+    selections
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn test_0() {
+        let h = vec!['R', 'W', 'G', 'X', 'X'];
+        assert_eq!(super::patriotic_selections(h.len(), &h), 16);
+    }
+    #[test]
+    fn test_1() {
+        let h = vec!['X', 'X', 'X'];
+        assert_eq!(super::patriotic_selections(h.len(), &h), 1);
+    }
+    #[test]
+    fn test_2() {
+        let h = vec!['R', 'W', 'X'];
+        assert_eq!(super::patriotic_selections(h.len(), &h), 1);
+    }
+    #[test]
+    fn test_3() {
+        let h = vec!['R', 'G', 'X', 'W', 'X', 'G'];
+        assert_eq!(super::patriotic_selections(h.len(), &h), 24);
+    }
+    #[test]
+    fn test_4() {
+        let h = vec!['X', 'X', 'X', 'X', 'X', 'X', 'X'];
+        assert_eq!(super::patriotic_selections(h.len(), &h), 2835);
+    }
+    #[test]
+    fn test_5() {
+        let h = vec!['G', 'G', 'G', 'R', 'R', 'R', 'W', 'W', 'W'];
+        assert_eq!(super::patriotic_selections(h.len(), &h), 0);
+    }
+    #[test]
+    fn test_6() {
+        let h = vec!['G', 'G', 'W', 'X', 'X', 'R'];
+        assert_eq!(super::patriotic_selections(h.len(), &h), 0);
     }
 }
