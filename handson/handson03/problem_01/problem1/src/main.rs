@@ -34,7 +34,8 @@ fn main() {
             dp[i][0] = attractions[i][0];
             olddp[i][0] = attractions[i][0];
         }
-
+        println!("{:?}", dp);
+        // Sum all rows
         for i in 0..n {
             for j in 1..d {
                 dp[i][j] = attractions[i][j] + dp[i][j - 1];
@@ -42,7 +43,7 @@ fn main() {
             }
         }
 
-        //Iterate through remaining columns of dp
+        //Knapsack step modified
         for j in 0..d {
             for i in 1..n {
                 if j == 0 {

@@ -26,21 +26,21 @@ fn patriotic_selections(n: usize, colors: &[char]) -> usize {
     for i in 0..n {
         if colors[i] == 'R' {
             //create new object in vector
-            whites.push((i, 0, 0, xcounter));
+            whites.push((0, 0, xcounter));
         }
         if colors[i] == 'W' {
             for x in 0..whites.len() {
-                whites[x].1 += 1;
+                whites[x].0 += 1;
             }
         }
         if colors[i] == 'G' {
             for x in 0..whites.len() {
                 //g as last x as start and w in middle
-                selections += 3_usize.pow(whites[x].2 as u32 + whites[x].3 as u32) * whites[x].1;
+                selections += 3_usize.pow(whites[x].1 as u32 + whites[x].2 as u32) * whites[x].0;
                 //use x as w
-                if whites[x].2 >= 1 {
+                if whites[x].1 >= 1 {
                     selections +=
-                        3_usize.pow(whites[x].2 as u32 - 1 + whites[x].3 as u32) * whites[x].2;
+                        3_usize.pow(whites[x].1 as u32 - 1 + whites[x].2 as u32) * whites[x].1;
                 }
             }
         }
@@ -49,20 +49,16 @@ fn patriotic_selections(n: usize, colors: &[char]) -> usize {
             selections = selections * 3;
             for x in 0..whites.len() {
                 //added for X=G
-                selections += 3_usize.pow(whites[x].2 as u32) * whites[x].1;
+                selections += 3_usize.pow(whites[x].1 as u32) * whites[x].0;
                 //use previous x as w
-                whites[x].2 += 1;
-                if whites[x].1 > 0 && whites[x].2 == 0 {
-                    //use x as G and there is a w
-                    selections +=
-                        3_usize.pow(whites[x].2 as u32 - 1 + whites[x].3 as u32) * whites[x].1;
-                } else if whites[x].2 >= 2 {
+                whites[x].1 += 1;
+                if whites[x].1 >= 2 {
                     //use x as G and as w
-                    selections += 3_usize.pow(whites[x].2 as u32 - 2 + whites[x].3 as u32)
-                        * (whites[x].2 - 1);
+                    selections += 3_usize.pow(whites[x].1 as u32 - 2 + whites[x].2 as u32)
+                        * (whites[x].1 - 1);
                 }
             }
-            whites.push((i, 0, 0, xcounter));
+            whites.push((0, 0, xcounter));
             xcounter += 1;
         }
     }
